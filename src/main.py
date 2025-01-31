@@ -1,78 +1,119 @@
 import sys
-from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
-                            QLineEdit, QPushButton, QLabel, QCompleter, QGridLayout)
+from PyQt6.QtWidgets import (
+    QApplication, QMainWindow, QWidget, QVBoxLayout, 
+    QLineEdit, QPushButton, QLabel, QCompleter, QGridLayout, QHBoxLayout
+)
 from PyQt6.QtCore import Qt, pyqtSlot
 from PyQt6.QtGui import QFont, QIcon
 import json
 from api_handler import get_weather_data
+from datetime import datetime
 
 class WeatherApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Weather Forecast")
-        self.setFixedSize(700, 600)  # Increased size for new data
+        self.setFixedSize(1400, 1200)  # Window dimensions
+
+        # --- UPDATED STYLES BELOW ---
         self.setStyleSheet("""
+            /* ----------- Main Window & General Widgets ----------- */
             QMainWindow {
-                background-color: #1e1e1e;
+                background-color: #2c3e50;
             }
             QWidget {
-                background-color: #1e1e1e;
-                color: #ffffff;
+                background-color: #2c3e50;
+                color: #ecf0f1;
+                font-family: 'Open Sans', 'Segoe UI', sans-serif;
             }
+            
+            /* ----------- Labels ----------- */
             QLabel {
-                color: #ffffff;
+                color: #ecf0f1;
             }
+
+            /* ----------- Line Edit (Search Input) ----------- */
             QLineEdit {
-                padding: 12px;
-                border: 2px solid #333333;
-                border-radius: 8px;
-                background-color: #2d2d2d;
-                color: #ffffff;
-                font-size: 14px;
-                selection-background-color: #404040;
+                padding: 15px;
+                border: 2px solid #2980b9;
+                border-radius: 10px;
+                background-color: #34495e;
+                color: #ecf0f1;
+                font-size: 16px;
+                min-height: 25px;
             }
             QLineEdit:focus {
-                border: 2px solid #0d47a1;
-                background-color: #363636;
+                border: 2px solid #3498db;
+                background-color: #3b5365;
             }
+            QLineEdit::placeholder {
+                color: #95a5a6;
+            }
+
+            /* ----------- Push Button (Get Weather) ----------- */
             QPushButton {
-                background-color: #0d47a1;
-                color: white;
-                padding: 12px;
-                border-radius: 8px;
-                font-weight: bold;
-                font-size: 14px;
+                background-color: #2980b9;
+                color: #ecf0f1;
+                padding: 15px 30px;
+                border-radius: 10px;
+                font-weight: 600;
+                font-size: 16px;
                 border: none;
+                min-width: 200px;
             }
             QPushButton:hover {
-                background-color: #1565c0;
+                background-color: #3498db;
             }
             QPushButton:pressed {
-                background-color: #0a367a;
+                background-color: #1c5980;
             }
+
+            /* ----------- Result Card ----------- */
             #resultCard {
-                background-color: #1e1e1e;
-                border-radius: 12px;
+                background-color: #2c3e50;
+                border: 1px solid #2c3e50;
+                border-radius: 15px;
+                /* Reduced padding and margin so it's more compact */
                 padding: 20px;
                 margin: 20px;
-                border: 1px solid #1e1e1e;
             }
+            
+            /* ----------- Completer ----------- */
             QCompleter {
-                background-color: #2d2d2d;
-                color: #ffffff;
+                background-color: #34495e;
+                color: #ecf0f1;
             }
+
+            /* ----------- Weather Value Labels ----------- */
             .weather-value {
-                font-size: 24px;
-                color: #ffffff;
-                padding: 10px;
+                /* Decreased font size from 42 to 36 for a better fit */
+                font-size: 36px;
+                color: #ecf0f1;
+                padding: 20px;
+                background-color: #34495e;
+                border-radius: 10px;
             }
             .weather-label {
-                font-size: 12px;
-                color: #808080;
+                /* Slightly smaller text for the descriptive label */
+                font-size: 14px;
+                color: #bdc3c7;
+                padding: 10px;
             }
+
+            /* ----------- Separator ----------- */
             QFrame#separator {
                 background-color: #404040;
                 margin: 10px 0px;
+            }
+            
+            /* ----------- Forecast Panel ----------- */
+            QWidget#forecastPanel {
+                background-color: #34495e;
+                border-radius: 12px;
+                padding: 20px;
+                min-width: 160px;
+                max-width: 200px;
+                min-height: 220px;
             }
         """)
 
@@ -80,12 +121,14 @@ class WeatherApp(QMainWindow):
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
-        layout.setContentsMargins(40, 40, 40, 40)
+        
+        # Reduced the large margins and spacing at the top/bottom
+        layout.setContentsMargins(40, 20, 40, 20)
         layout.setSpacing(20)
 
         # Title
         title = QLabel("Weather Forecast")
-        title.setFont(QFont("Segoe UI", 24, QFont.Weight.Bold))
+        title.setFont(QFont("Open Sans", 28, QFont.Weight.Bold))  # Slightly smaller
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         layout.addWidget(title)
 
@@ -95,49 +138,47 @@ class WeatherApp(QMainWindow):
 
         # Search input with autocomplete
         self.search_label = QLabel("Enter City (e.g., Los Angeles, CA)")
-        self.search_label.setFont(QFont("Segoe UI", 12))
+        self.search_label.setFont(QFont("Open Sans", 12))
         layout.addWidget(self.search_label)
 
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Type to search...")
+        self.search_input.setFixedWidth(400)
         completer = QCompleter(self.cities)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.search_input.setCompleter(completer)
         layout.addWidget(self.search_input)
 
-        # Update placeholder text color
-        self.search_input.setStyleSheet("""
-            QLineEdit::placeholder {
-                color: #808080;
-            }
-        """)
-
         # Search button
         self.search_button = QPushButton("Get Weather")
+        self.search_button.setFixedWidth(200)
         self.search_button.clicked.connect(self.fetch_weather)
         layout.addWidget(self.search_button)
 
         # Results card with grid layout
         self.result_widget = QWidget()
         self.result_widget.setObjectName("resultCard")
+        self.result_widget.setMinimumHeight(700)  # Slightly less to show more info quickly
         result_layout = QVBoxLayout(self.result_widget)
 
         self.weather_title = QLabel()
-        self.weather_title.setFont(QFont("Segoe UI", 18, QFont.Weight.Bold))
+        self.weather_title.setFont(QFont("Open Sans", 18, QFont.Weight.Bold))
         self.weather_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         result_layout.addWidget(self.weather_title)
 
         # Grid for weather data
         grid_layout = QGridLayout()
+        # Reduced spacing and margins so the data is more compact
         grid_layout.setSpacing(20)
+        grid_layout.setContentsMargins(20, 20, 20, 20)
 
-        # Temperature section
+        # Temperature & Feels Like
         self.temperature = self.create_data_widget("Temperature", "°F")
         self.feels_like = self.create_data_widget("Feels Like", "°F")
         grid_layout.addWidget(self.temperature, 0, 0)
         grid_layout.addWidget(self.feels_like, 1, 0)
 
-        # Add separator
+        # Separator line
         separator = QWidget()
         separator.setObjectName("separator")
         separator.setFixedHeight(1)
@@ -159,30 +200,91 @@ class WeatherApp(QMainWindow):
         layout.addWidget(self.result_widget)
         self.result_widget.hide()
 
-        # Add stretching space at bottom
+        # Forecast label
+        forecast_label = QLabel("6-Day Forecast")
+        forecast_label.setFont(QFont("Open Sans", 20, QFont.Weight.Bold))
+        forecast_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        result_layout.addWidget(forecast_label)
+        
+        # Create forecast container
+        self.forecast_container = QWidget()
+        forecast_layout = QHBoxLayout(self.forecast_container)
+        forecast_layout.setSpacing(15)
+        forecast_layout.setContentsMargins(15, 20, 15, 20)
+        self.forecast_container.setMinimumHeight(300)
+
+        # Create 6 day forecast panels
+        self.forecast_panels = []
+        for _ in range(6):
+            panel = self.create_forecast_panel()
+            self.forecast_panels.append(panel)
+            forecast_layout.addWidget(panel)
+        
+        result_layout.addWidget(self.forecast_container)
         layout.addStretch()
+
+        # Adjust column/row stretching
+        grid_layout.setColumnStretch(0, 1)
+        grid_layout.setColumnStretch(1, 1)
+        grid_layout.setColumnStretch(2, 1)
+        grid_layout.setRowStretch(0, 1)
+        grid_layout.setRowStretch(1, 1)
 
     def create_data_widget(self, label_text, unit):
         widget = QWidget()
+        widget.setMinimumSize(280, 170)  # Slightly smaller than before
         layout = QVBoxLayout(widget)
+        layout.setSpacing(15)
+        layout.setContentsMargins(20, 20, 20, 20)
         
         value_label = QLabel()
         value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        value_label.setFont(QFont("Segoe UI", 24))
+        # Decreased from 42 to 36 in the stylesheet, so no need to re-override here
+        value_label.setFont(QFont("Open Sans", 36, QFont.Weight.Bold))
         value_label.setProperty("class", "weather-value")
+        value_label.setMinimumHeight(50)
         
         desc_label = QLabel(f"{label_text}\n{unit}")
         desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        desc_label.setFont(QFont("Open Sans", 14))
         desc_label.setProperty("class", "weather-label")
         
         layout.addWidget(value_label)
         layout.addWidget(desc_label)
         
-        # Store labels as attributes of widget for easy access
         widget.value_label = value_label
         widget.desc_label = desc_label
         
         return widget
+
+    def create_forecast_panel(self):
+        panel = QWidget()
+        panel.setObjectName("forecastPanel")
+        layout = QVBoxLayout(panel)
+        layout.setSpacing(8)
+
+        day_label = QLabel()
+        day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        day_label.setFont(QFont("Open Sans", 14, QFont.Weight.Bold))
+        
+        weather_desc = QLabel()
+        weather_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        weather_desc.setWordWrap(True)
+        weather_desc.setFont(QFont("Open Sans", 12))
+        
+        temp_label = QLabel()
+        temp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        temp_label.setFont(QFont("Open Sans", 13))
+        
+        layout.addWidget(day_label)
+        layout.addWidget(weather_desc)
+        layout.addWidget(temp_label)
+        
+        panel.day_label = day_label
+        panel.weather_desc = weather_desc
+        panel.temp_label = temp_label
+        
+        return panel
 
     @pyqtSlot()
     def fetch_weather(self):
@@ -198,24 +300,35 @@ class WeatherApp(QMainWindow):
 
             weather = get_weather_data(city)
             if weather:
-                self.weather_title.setText(f"{weather['city']}")
+                # Update city name
+                self.weather_title.setText(f"{city}")
                 
-                # Update temperature values
-                self.temperature.value_label.setText(f"{weather['temperature']}")
-                self.feels_like.value_label.setText(f"{weather['temperatureApparent']}")
+                # Update current weather values
+                if 'temperature' in weather:
+                    self.temperature.value_label.setText(f"{weather['temperature']}°")
+                    self.feels_like.value_label.setText(f"{weather['temperatureApparent']}°")
+                    self.wind_speed.value_label.setText(f"{weather['windSpeed']}")
+                    self.wind_direction.value_label.setText(f"{weather['windDirection']}")
+                    self.wind_gust.value_label.setText(f"{weather['windGust']}")
+                    self.precip_prob.value_label.setText(f"{weather['precipitationProbability']}")
                 
-                # Update wind values
-                self.wind_speed.value_label.setText(f"{weather['windSpeed']}")
-                self.wind_direction.value_label.setText(f"{weather['windDirection']}")
-                self.wind_gust.value_label.setText(f"{weather['windGust']}")
-                
-                # Update precipitation probability
-                self.precip_prob.value_label.setText(f"{weather['precipitationProbability']}")
+                # Update forecast panels
+                if 'forecast' in weather and weather['forecast']:
+                    for i, forecast in enumerate(weather['forecast']):
+                        if i < len(self.forecast_panels):
+                            panel = self.forecast_panels[i]
+                            date = datetime.strptime(forecast['date'], '%Y-%m-%d')
+                            panel.day_label.setText(date.strftime('%a'))
+                            panel.weather_desc.setText(f"{forecast['weatherDesc']}")
+                            panel.temp_label.setText(
+                                f"{forecast['tempHigh']}°↑  {forecast['tempLow']}°↓"
+                            )
                 
                 self.result_widget.show()
             else:
                 self.show_error("Could not retrieve weather data")
         except Exception as e:
+            print(f"Error in fetch_weather: {str(e)}")
             self.show_error(str(e))
 
     def show_error(self, message):

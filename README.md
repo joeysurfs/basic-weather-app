@@ -2,24 +2,48 @@
 
 # Weather Forecast Application
 
-A modern weather application built with PyQt6 that utilizes the Tomorrow.io API to provide detailed weather information for US cities.
+A sophisticated weather application built with PyQt6 that provides detailed weather information for US cities using the Tomorrow.io API. Features a modern dark theme interface and real-time data updates.
 
-## Features
+## Key Features
 
-- **Modern Dark Theme UI**: Sleek, professional design with a dark color scheme
-- **Real-time Weather Data**: 
-  - Current temperature
-  - "Feels like" temperature
-  - Wind speed, direction, and gusts
-  - Precipitation probability
-- **Smart City Search**: 
-  - Auto-complete functionality
-  - Pre-populated with common US cities
-  - Case-insensitive search
-- **Wind Direction Display**: 
-  - Cardinal directions (N, NE, E, SE, S, SW, W, NW)
-  - Degree measurements included
-- **Rate Limiting**: Built-in API call management to stay within usage limits
+### Current Weather Data
+- Real-time temperature readings
+- "Feels like" temperature
+- Wind information (speed, direction, gusts)
+- Precipitation probability
+- Cardinal direction display (N, NE, E, SE, S, SW, W, NW)
+
+### 6-Day Forecast
+- Daily high and low temperatures
+- Weather condition descriptions
+- Day-by-day breakdown
+
+### Smart Search
+- Auto-complete city search
+- Pre-populated US cities database
+- Case-insensitive searching
+- Instant results
+
+### User Interface
+- Modern dark theme design
+- Responsive grid layout
+- Clear data visualization
+- Professional styling
+- Intuitive controls
+
+## Technical Features
+
+### API Integration
+- Tomorrow.io weather API
+- OpenStreetMap geocoding
+- Built-in rate limiting
+- Error handling
+
+### Performance
+- Efficient data caching
+- Minimal API calls
+- Quick response times
+- Resource-friendly
 
 ## Project Structure
 

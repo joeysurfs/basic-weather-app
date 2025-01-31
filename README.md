@@ -2,7 +2,7 @@
 
 # Weather Forecast Application
 
-A sophisticated weather application built with PyQt6 that provides detailed weather information for US cities using the Tomorrow.io API. Features a modern dark theme interface and real-time data updates.
+A modern weather application built with PyQt6 that utilizes the Tomorrow.io API to provide detailed weather information for US cities.
 
 ## Key Features
 

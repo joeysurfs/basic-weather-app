@@ -2,39 +2,45 @@
 
 # Modern Weather Forecast Application
 
-A sophisticated weather application with a modern dark-themed interface built using PyQt6 and Tomorrow.io API. Features real-time weather data and a 6-day forecast for US cities.
+A sophisticated desktop weather application featuring a modern dark theme interface, built with PyQt6 and the Tomorrow.io API. Delivers comprehensive weather information with an intuitive user experience.
 
-## Features
+![Weather App Screenshot]
+*(Screenshot to be added)*
 
-### Current Weather Display
-- Current temperature with "feels like" reading
-- Wind conditions (speed, direction, gusts)
-- Precipitation probability
-- Cardinal wind directions with degree readings
+## Core Features
 
-### 6-Day Weather Forecast
-- Daily weather conditions
-- High and low temperatures
-- Weather descriptions
-- Weather condition icons
-- Day-of-week display
+### Real-Time Weather Data
+- **Current Conditions**
+  - Temperature & "Feels Like" readings
+  - Wind metrics (speed, direction, gusts)
+  - Precipitation probability
+  - Cardinal wind direction with degree readings
 
-### Smart City Search
-- Instant search with auto-complete
-- 200+ pre-populated US cities
-- Case-insensitive matching
-- Quick city selection
+### Extended Forecast
+- **6-Day Outlook**
+  - Daily high/low temperatures
+  - Weather condition descriptions
+  - Precipitation probability
+  - Weather condition icons
+  - Day-of-week display
 
-### Modern UI Features
-- Dark theme with professional styling
-- Responsive grid layout
-- Clear data visualization
-- Smooth transitions
-- Error handling with user feedback
+### User Interface
+- **Smart City Search**
+  - Real-time autocomplete
+  - Curated database of US cities
+  - Case-insensitive matching
+  - Instant results
 
-## Technical Details
+- **Professional Design**
+  - Modern dark theme
+  - Responsive grid layout
+  - Clear data visualization
+  - Intuitive controls
+  - Error handling with feedback
 
-### Project Structure
+## Technical Implementation
+
+### Project Architecture
 ```
 weather_app
 ├── src

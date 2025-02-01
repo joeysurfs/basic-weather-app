@@ -166,7 +166,8 @@ def get_forecast(lat, lon):
         'fields': [
             'temperatureMax',
             'temperatureMin',
-            'weatherCodeMax'
+            'weatherCodeMax',
+            'precipitationProbabilityAvg'  # Added precipitation probability
         ]
     }
     
@@ -190,9 +191,10 @@ def get_forecast(lat, lon):
             temp_high = values.get('temperatureMax')
             temp_low = values.get('temperatureMin')
             weather_code = values.get('weatherCodeMax')
+            precip_prob = values.get('precipitationProbabilityAvg', 0)  # Added precipitation
             
             if any(v is None for v in [temp_high, temp_low, weather_code]):
-                print(f"Missing data in day: {day}")  # Debug print
+                print(f"Missing data in day: {day}")
                 continue
                 
             forecast.append({
@@ -200,7 +202,8 @@ def get_forecast(lat, lon):
                 'tempHigh': round(float(temp_high), 1),
                 'tempLow': round(float(temp_low), 1),
                 'weatherCode': int(weather_code),
-                'weatherDesc': get_weather_code_description(int(weather_code))
+                'weatherDesc': get_weather_code_description(int(weather_code)),
+                'precipitationProbability': round(float(precip_prob), 0)  # Added precipitation
             })
         
         print("Processed Forecast:", forecast)  # Debug print

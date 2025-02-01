@@ -20,7 +20,7 @@ class WeatherApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Weather Forecast")
-        self.setFixedSize(1400, 1200)  # Window dimensions
+        self.setFixedSize(1400, 1200)
 
         # --- UPDATED STYLES BELOW ---
         self.setStyleSheet("""
@@ -277,33 +277,63 @@ class WeatherApp(QMainWindow):
         layout = QVBoxLayout(panel)
         layout.setSpacing(8)
 
+        # Day label
         day_label = QLabel()
         day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         day_label.setFont(QFont("Open Sans", 14, QFont.Weight.Bold))
+        layout.addWidget(day_label)
         
-        # Add weather icon label
+        # Create horizontal container for icon and precipitation
+        icon_container = QWidget()
+        icon_layout = QHBoxLayout(icon_container)
+        # Remove margins to allow natural centering
+        icon_layout.setContentsMargins(0, 0, 0, 0)
+        # Increase spacing between icon and percentage
+        icon_layout.setSpacing(8)
+        
+        # Add stretching space on the left
+        icon_layout.addStretch(1)
+        
+        # Weather icon
         weather_icon = QLabel()
         weather_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        weather_icon.setFixedSize(64, 64)  # Set fixed size for the icon
+        weather_icon.setFixedSize(64, 64)
+        icon_layout.addWidget(weather_icon)
         
+        # Precipitation probability
+        precip_label = QLabel()
+        precip_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
+        precip_label.setFont(QFont("Open Sans", 11))
+        precip_label.setStyleSheet("""
+            color: #3498db;
+            margin-left: 4px;
+        """)
+        icon_layout.addWidget(precip_label)
+        
+        # Add stretching space on the right
+        icon_layout.addStretch(1)
+        
+        layout.addWidget(icon_container)
+        
+        # Weather description
         weather_desc = QLabel()
         weather_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         weather_desc.setWordWrap(True)
         weather_desc.setFont(QFont("Open Sans", 12))
+        layout.addWidget(weather_desc)
         
+        # Temperature
         temp_label = QLabel()
         temp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         temp_label.setFont(QFont("Open Sans", 13))
-        
-        layout.addWidget(day_label)
-        layout.addWidget(weather_icon)
-        layout.addWidget(weather_desc)
         layout.addWidget(temp_label)
         
+        # Store labels as attributes
         panel.day_label = day_label
         panel.weather_icon = weather_icon
         panel.weather_desc = weather_desc
         panel.temp_label = temp_label
+        panel.precip_label = precip_label
         
         return panel
 
@@ -348,11 +378,13 @@ class WeatherApp(QMainWindow):
             panel.weather_desc.setText(forecast['weatherDesc'])
             panel.temp_label.setText(f"{forecast['tempHigh']}°↑  {forecast['tempLow']}°↓")
             
-            logger.debug(
-                f"Updated panel - Day: {date.strftime('%a')}, "
-                f"Code: {weather_code}, "
-                f"Desc: {forecast['weatherDesc']}"
-            )
+            # Update precipitation probability (minimalist style)
+            precip = forecast['precipitationProbability']
+            panel.precip_label.setText(f"{precip}%")
+            
+            logger.debug(f"Updated panel - Day: {date.strftime('%a')}, "
+                      f"Code: {weather_code}, "
+                      f"Desc: {forecast['weatherDesc']}")
             
         except Exception as e:
             logger.error(f"Error updating forecast panel: {str(e)}")

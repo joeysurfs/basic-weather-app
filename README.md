@@ -1,55 +1,40 @@
 # README.md
 
-# Weather Forecast Application
+# Modern Weather Forecast Application
 
-A modern weather application built with PyQt6 that utilizes the Tomorrow.io API to provide detailed weather information for US cities.
+A sophisticated weather application with a modern dark-themed interface built using PyQt6 and Tomorrow.io API. Features real-time weather data and a 6-day forecast for US cities.
 
-![weather-example-2](https://github.com/user-attachments/assets/4e53275d-2747-4a3f-bbfa-ccf3759381c1)
+## Features
 
-
-## Key Features
-
-### Current Weather Data
-- Real-time temperature readings
-- "Feels like" temperature
-- Wind information (speed, direction, gusts)
+### Current Weather Display
+- Current temperature with "feels like" reading
+- Wind conditions (speed, direction, gusts)
 - Precipitation probability
-- Cardinal direction display (N, NE, E, SE, S, SW, W, NW)
+- Cardinal wind directions with degree readings
 
-### 6-Day Forecast
-- Daily high and low temperatures
-- Weather condition descriptions
-- Day-by-day breakdown
+### 6-Day Weather Forecast
+- Daily weather conditions
+- High and low temperatures
+- Weather descriptions
+- Weather condition icons
+- Day-of-week display
 
-### Smart Search
-- Auto-complete city search
-- Pre-populated US cities database
-- Case-insensitive searching
-- Instant results
+### Smart City Search
+- Instant search with auto-complete
+- 200+ pre-populated US cities
+- Case-insensitive matching
+- Quick city selection
 
-### User Interface
-- Modern dark theme design
+### Modern UI Features
+- Dark theme with professional styling
 - Responsive grid layout
 - Clear data visualization
-- Professional styling
-- Intuitive controls
+- Smooth transitions
+- Error handling with user feedback
 
-## Technical Features
+## Technical Details
 
-### API Integration
-- Tomorrow.io weather API
-- OpenStreetMap geocoding
-- Built-in rate limiting
-- Error handling
-
-### Performance
-- Efficient data caching
-- Minimal API calls
-- Quick response times
-- Resource-friendly
-
-## Project Structure
-
+### Project Structure
 ```
 weather_app
 ├── src

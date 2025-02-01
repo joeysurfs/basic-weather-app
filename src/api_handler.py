@@ -162,7 +162,12 @@ def get_forecast(lat, lon):
         'location': f"{lat},{lon}",
         'apikey': API_KEY,
         'units': 'imperial',
-        'timesteps': 'daily'  # Specify daily timesteps
+        'timesteps': 'daily',
+        'fields': [
+            'temperatureMax',
+            'temperatureMin',
+            'weatherCodeMax'
+        ]
     }
     
     try:
@@ -172,30 +177,35 @@ def get_forecast(lat, lon):
             raise Exception("Unable to fetch forecast")
             
         data = response.json()
+        print("Forecast API Response:", data)  # Debug print
         
-        # Debug print to see the structure
-        print("API Response:", data)
-        
-        # Updated data path for Tomorrow.io API v4
-        if 'timelines' not in data:
+        if 'timelines' not in data or 'daily' not in data['timelines']:
             raise Exception("Invalid forecast data structure")
             
         daily_data = data['timelines']['daily']
         
         forecast = []
-        for day in daily_data[:6]:  # Changed from 7 to 6
+        for day in daily_data[:6]:
+            values = day.get('values', {})
+            temp_high = values.get('temperatureMax')
+            temp_low = values.get('temperatureMin')
+            weather_code = values.get('weatherCodeMax')
+            
+            if any(v is None for v in [temp_high, temp_low, weather_code]):
+                print(f"Missing data in day: {day}")  # Debug print
+                continue
+                
             forecast.append({
-                'date': day['time'][:10],  # YYYY-MM-DD format
-                'tempHigh': round(day['values']['temperatureMax'], 1),
-                'tempLow': round(day['values']['temperatureMin'], 1),
-                'weatherCode': day['values']['weatherCodeMax'],
-                'weatherDesc': get_weather_code_description(day['values']['weatherCodeMax'])
+                'date': day['time'][:10],
+                'tempHigh': round(float(temp_high), 1),
+                'tempLow': round(float(temp_low), 1),
+                'weatherCode': int(weather_code),
+                'weatherDesc': get_weather_code_description(int(weather_code))
             })
         
+        print("Processed Forecast:", forecast)  # Debug print
         return forecast
-    except KeyError as e:
-        print(f"KeyError in forecast data: {str(e)}")
-        raise Exception("Invalid forecast data format")
+        
     except Exception as e:
         print(f"Forecast error: {str(e)}")
         raise Exception(f"Error fetching forecast: {str(e)}")

@@ -4,10 +4,17 @@ from PyQt6.QtWidgets import (
     QLineEdit, QPushButton, QLabel, QCompleter, QGridLayout, QHBoxLayout
 )
 from PyQt6.QtCore import Qt, pyqtSlot
-from PyQt6.QtGui import QFont, QIcon
+from PyQt6.QtGui import QFont, QIcon, QPixmap
 import json
 from api_handler import get_weather_data
 from datetime import datetime
+import os
+import logging
+from pathlib import Path
+
+# Add logger configuration
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 class WeatherApp(QMainWindow):
     def __init__(self):
@@ -114,6 +121,13 @@ class WeatherApp(QMainWindow):
                 min-width: 160px;
                 max-width: 200px;
                 min-height: 220px;
+            }
+
+            /* ----------- Weather Icons ----------- */
+            QLabel[iconLabel="true"] {
+                background-color: transparent;
+                border: none;
+                padding: 0px;
             }
         """)
 
@@ -267,6 +281,11 @@ class WeatherApp(QMainWindow):
         day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         day_label.setFont(QFont("Open Sans", 14, QFont.Weight.Bold))
         
+        # Add weather icon label
+        weather_icon = QLabel()
+        weather_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        weather_icon.setFixedSize(64, 64)  # Set fixed size for the icon
+        
         weather_desc = QLabel()
         weather_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         weather_desc.setWordWrap(True)
@@ -277,14 +296,68 @@ class WeatherApp(QMainWindow):
         temp_label.setFont(QFont("Open Sans", 13))
         
         layout.addWidget(day_label)
+        layout.addWidget(weather_icon)
         layout.addWidget(weather_desc)
         layout.addWidget(temp_label)
         
         panel.day_label = day_label
+        panel.weather_icon = weather_icon
         panel.weather_desc = weather_desc
         panel.temp_label = temp_label
         
         return panel
+
+    def load_weather_icon(self, weather_code):
+        """Load weather icon based on weather code"""
+        # Get absolute path to icons directory
+        base_path = Path(__file__).parent
+        icon_path = base_path / "data" / "weather-icons" / f"{weather_code}.png"
+        
+        logger.debug(f"Attempting to load icon from: {icon_path}")
+        
+        if icon_path.exists():
+            pixmap = QPixmap(str(icon_path))
+            if pixmap.isNull():
+                logger.error(f"Failed to load icon: {icon_path}")
+                return QPixmap()
+            logger.debug(f"Successfully loaded icon: {icon_path}")
+            return pixmap
+        else:
+            logger.error(f"Icon file not found: {icon_path}")
+            return QPixmap()
+
+    def update_forecast_panel(self, panel, forecast):
+        """Update a forecast panel with weather data"""
+        try:
+            # Format date
+            date = datetime.strptime(forecast['date'], '%Y-%m-%d')
+            panel.day_label.setText(date.strftime('%a'))
+            
+            # Load and set weather icon
+            weather_code = forecast['weatherCode']
+            icon = self.load_weather_icon(weather_code)
+            if not icon.isNull():
+                panel.weather_icon.setPixmap(icon.scaled(
+                    64, 64,
+                    Qt.AspectRatioMode.KeepAspectRatio,
+                    Qt.TransformationMode.SmoothTransformation
+                ))
+                panel.weather_icon.setProperty("iconLabel", "true")
+            
+            # Set weather description and temperature
+            panel.weather_desc.setText(forecast['weatherDesc'])
+            panel.temp_label.setText(f"{forecast['tempHigh']}°↑  {forecast['tempLow']}°↓")
+            
+            logger.debug(
+                f"Updated panel - Day: {date.strftime('%a')}, "
+                f"Code: {weather_code}, "
+                f"Desc: {forecast['weatherDesc']}"
+            )
+            
+        except Exception as e:
+            logger.error(f"Error updating forecast panel: {str(e)}")
+            panel.weather_desc.setText("Error")
+            panel.temp_label.setText("--")
 
     @pyqtSlot()
     def fetch_weather(self):
@@ -316,13 +389,7 @@ class WeatherApp(QMainWindow):
                 if 'forecast' in weather and weather['forecast']:
                     for i, forecast in enumerate(weather['forecast']):
                         if i < len(self.forecast_panels):
-                            panel = self.forecast_panels[i]
-                            date = datetime.strptime(forecast['date'], '%Y-%m-%d')
-                            panel.day_label.setText(date.strftime('%a'))
-                            panel.weather_desc.setText(f"{forecast['weatherDesc']}")
-                            panel.temp_label.setText(
-                                f"{forecast['tempHigh']}°↑  {forecast['tempLow']}°↓"
-                            )
+                            self.update_forecast_panel(self.forecast_panels[i], forecast)
                 
                 self.result_widget.show()
             else:

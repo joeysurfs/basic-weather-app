@@ -4,6 +4,9 @@
 
 A modern weather application built with PyQt6 that utilizes the Tomorrow.io API to provide detailed weather information for US cities.
 
+![weather-example-2](https://github.com/user-attachments/assets/4e53275d-2747-4a3f-bbfa-ccf3759381c1)
+
+
 ## Key Features
 
 ### Current Weather Data

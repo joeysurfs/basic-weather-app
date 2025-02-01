@@ -1,11 +1,10 @@
 # README.md
 
-# Modern Weather Forecast Application
+# Weather Forecast Application
 
 A sophisticated desktop weather application featuring a modern dark theme interface, built with PyQt6 and the Tomorrow.io API. Delivers comprehensive weather information with an intuitive user experience.
 
-![Weather App Screenshot]
-*(Screenshot to be added)*
+![weather-example-3](https://github.com/user-attachments/assets/5632ad73-50ee-4108-8f0d-7f142edf80a8)
 
 ## Core Features
 

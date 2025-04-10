@@ -20,7 +20,8 @@ class WeatherApp(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Weather Forecast")
-        self.setFixedSize(1400, 1200)
+        # Remove fixed size to allow fullscreen
+        # self.setFixedSize(1400, 1200)
 
         # --- UPDATED STYLES BELOW ---
         self.setStyleSheet("""
@@ -41,13 +42,13 @@ class WeatherApp(QMainWindow):
 
             /* ----------- Line Edit (Search Input) ----------- */
             QLineEdit {
-                padding: 15px;
+                padding: 10px;
                 border: 2px solid #2980b9;
-                border-radius: 10px;
+                border-radius: 8px;
                 background-color: #34495e;
                 color: #ecf0f1;
-                font-size: 16px;
-                min-height: 25px;
+                font-size: 14px;
+                min-height: 20px;
             }
             QLineEdit:focus {
                 border: 2px solid #3498db;
@@ -61,12 +62,13 @@ class WeatherApp(QMainWindow):
             QPushButton {
                 background-color: #2980b9;
                 color: #ecf0f1;
-                padding: 15px 30px;
-                border-radius: 10px;
+                padding: 12px 20px;
+                border-radius: 8px;
                 font-weight: 600;
-                font-size: 16px;
+                font-size: 14px;
                 border: none;
-                min-width: 200px;
+                min-width: 150px;
+                min-height: 40px; /* Ensure touch-friendly size */
             }
             QPushButton:hover {
                 background-color: #3498db;
@@ -75,14 +77,33 @@ class WeatherApp(QMainWindow):
                 background-color: #1c5980;
             }
 
+            /* ----------- Close Button ----------- */
+            #closeButton {
+                background-color: #c0392b;
+                color: white;
+                font-weight: bold;
+                font-size: 16px;
+                border-radius: 8px;
+                min-width: 60px;
+                min-height: 40px;
+                padding: 5px;
+                margin: 8px;
+            }
+            #closeButton:hover {
+                background-color: #e74c3c;
+            }
+            #closeButton:pressed {
+                background-color: #a93226;
+            }
+
             /* ----------- Result Card ----------- */
             #resultCard {
                 background-color: #2c3e50;
                 border: 1px solid #2c3e50;
-                border-radius: 15px;
-                /* Reduced padding and margin so it's more compact */
-                padding: 20px;
-                margin: 20px;
+                border-radius: 12px;
+                /* Reduced padding for smaller screen */
+                padding: 10px;
+                margin: 10px;
             }
             
             /* ----------- Completer ----------- */
@@ -93,34 +114,34 @@ class WeatherApp(QMainWindow):
 
             /* ----------- Weather Value Labels ----------- */
             .weather-value {
-                /* Decreased font size from 42 to 36 for a better fit */
-                font-size: 36px;
+                /* Decreased font size for 7-inch display */
+                font-size: 24px;
                 color: #ecf0f1;
-                padding: 20px;
+                padding: 10px;
                 background-color: #34495e;
-                border-radius: 10px;
+                border-radius: 8px;
             }
             .weather-label {
-                /* Slightly smaller text for the descriptive label */
-                font-size: 14px;
+                /* Smaller text for the descriptive label */
+                font-size: 12px;
                 color: #bdc3c7;
-                padding: 10px;
+                padding: 5px;
             }
 
             /* ----------- Separator ----------- */
             QFrame#separator {
                 background-color: #404040;
-                margin: 10px 0px;
+                margin: 5px 0px;
             }
             
             /* ----------- Forecast Panel ----------- */
             QWidget#forecastPanel {
                 background-color: #34495e;
-                border-radius: 12px;
-                padding: 20px;
-                min-width: 160px;
-                max-width: 200px;
-                min-height: 220px;
+                border-radius: 10px;
+                padding: 10px;
+                min-width: 120px;
+                max-width: 150px;
+                min-height: 180px;
             }
 
             /* ----------- Weather Icons ----------- */
@@ -136,55 +157,105 @@ class WeatherApp(QMainWindow):
         self.setCentralWidget(central_widget)
         layout = QVBoxLayout(central_widget)
         
-        # Reduced the large margins and spacing at the top/bottom
-        layout.setContentsMargins(40, 20, 40, 20)
-        layout.setSpacing(20)
+        # Reduced the margins and spacing even further for small screen
+        layout.setContentsMargins(20, 10, 20, 10)
+        layout.setSpacing(10)
 
-        # Title
+        # Create a top bar with grid layout for better centering
+        top_bar = QWidget()
+        top_bar_layout = QGridLayout(top_bar)
+        top_bar_layout.setContentsMargins(0, 0, 0, 0)
+        top_bar_layout.setSpacing(0)
+        
+        # Add empty widget to first column for balance
+        empty_widget = QWidget()
+        empty_widget.setFixedWidth(60)  # Same width as close button
+        top_bar_layout.addWidget(empty_widget, 0, 0)
+        
+        # Add title in the center column
         title = QLabel("Weather Forecast")
-        title.setFont(QFont("Open Sans", 28, QFont.Weight.Bold))  # Slightly smaller
+        title.setFont(QFont("Open Sans", 22, QFont.Weight.Bold))
         title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        layout.addWidget(title)
+        top_bar_layout.addWidget(title, 0, 1)
+        
+        # Add close button to the right column
+        self.close_button = QPushButton("×")
+        self.close_button.setObjectName("closeButton")
+        self.close_button.setToolTip("Close Application")
+        self.close_button.clicked.connect(self.close)
+        top_bar_layout.addWidget(self.close_button, 0, 2, Qt.AlignmentFlag.AlignRight)
+        
+        # Set column stretching to ensure title stays centered
+        top_bar_layout.setColumnStretch(0, 0)  # Left empty space doesn't stretch
+        top_bar_layout.setColumnStretch(1, 1)  # Center column stretches
+        top_bar_layout.setColumnStretch(2, 0)  # Right column doesn't stretch
+        
+        # Add the top bar to the main layout
+        layout.addWidget(top_bar)
 
         # Load cities for autocomplete
         with open('src/data/cities.json', 'r') as f:
             self.cities = json.load(f)['cities']
 
-        # Search input with autocomplete
+        # Create a container for all search-related elements
+        search_container = QWidget()
+        search_container_layout = QVBoxLayout(search_container)
+        search_container_layout.setContentsMargins(10, 10, 10, 10)
+        search_container_layout.setSpacing(8)
+        
+        # Search input with autocomplete - now in container
         self.search_label = QLabel("Enter City (e.g., Los Angeles, CA)")
-        self.search_label.setFont(QFont("Open Sans", 12))
-        layout.addWidget(self.search_label)
+        self.search_label.setFont(QFont("Open Sans", 10))
+        self.search_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        search_container_layout.addWidget(self.search_label)
 
+        # Create a layout for search input and button
+        input_layout = QHBoxLayout()
+        input_layout.setContentsMargins(0, 0, 0, 0)
+        input_layout.setSpacing(10)
+        
+        # Add stretch to center the input elements
+        input_layout.addStretch(1)
+        
         self.search_input = QLineEdit()
         self.search_input.setPlaceholderText("Type to search...")
-        self.search_input.setFixedWidth(400)
+        self.search_input.setFixedWidth(300)  # Narrower for small screen
         completer = QCompleter(self.cities)
         completer.setCaseSensitivity(Qt.CaseSensitivity.CaseInsensitive)
         self.search_input.setCompleter(completer)
-        layout.addWidget(self.search_input)
+        input_layout.addWidget(self.search_input)
 
         # Search button
         self.search_button = QPushButton("Get Weather")
-        self.search_button.setFixedWidth(200)
+        self.search_button.setFixedWidth(150)  # Narrower but still touch-friendly
         self.search_button.clicked.connect(self.fetch_weather)
-        layout.addWidget(self.search_button)
+        input_layout.addWidget(self.search_button)
+        
+        # Add stretch to center the input elements
+        input_layout.addStretch(1)
+        
+        # Add the input layout to the container
+        search_container_layout.addLayout(input_layout)
+        
+        # Add search container to main layout
+        layout.addWidget(search_container)
 
         # Results card with grid layout
         self.result_widget = QWidget()
         self.result_widget.setObjectName("resultCard")
-        self.result_widget.setMinimumHeight(700)  # Slightly less to show more info quickly
+        self.result_widget.setMinimumHeight(400)  # Reduced for smaller screen
         result_layout = QVBoxLayout(self.result_widget)
 
         self.weather_title = QLabel()
-        self.weather_title.setFont(QFont("Open Sans", 18, QFont.Weight.Bold))
+        self.weather_title.setFont(QFont("Open Sans", 16, QFont.Weight.Bold))
         self.weather_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
         result_layout.addWidget(self.weather_title)
 
         # Grid for weather data
         grid_layout = QGridLayout()
-        # Reduced spacing and margins so the data is more compact
-        grid_layout.setSpacing(20)
-        grid_layout.setContentsMargins(20, 20, 20, 20)
+        # Further reduced spacing and margins for 7" display
+        grid_layout.setSpacing(10)
+        grid_layout.setContentsMargins(10, 10, 10, 10)
 
         # Temperature & Feels Like
         self.temperature = self.create_data_widget("Temperature", "°F")
@@ -216,16 +287,16 @@ class WeatherApp(QMainWindow):
 
         # Forecast label
         forecast_label = QLabel("6-Day Forecast")
-        forecast_label.setFont(QFont("Open Sans", 20, QFont.Weight.Bold))
+        forecast_label.setFont(QFont("Open Sans", 16, QFont.Weight.Bold))
         forecast_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         result_layout.addWidget(forecast_label)
         
         # Create forecast container
         self.forecast_container = QWidget()
         forecast_layout = QHBoxLayout(self.forecast_container)
-        forecast_layout.setSpacing(15)
-        forecast_layout.setContentsMargins(15, 20, 15, 20)
-        self.forecast_container.setMinimumHeight(300)
+        forecast_layout.setSpacing(8)
+        forecast_layout.setContentsMargins(5, 10, 5, 10)
+        self.forecast_container.setMinimumHeight(200)  # Reduced height
 
         # Create 6 day forecast panels
         self.forecast_panels = []
@@ -246,21 +317,20 @@ class WeatherApp(QMainWindow):
 
     def create_data_widget(self, label_text, unit):
         widget = QWidget()
-        widget.setMinimumSize(280, 170)  # Slightly smaller than before
+        widget.setMinimumSize(150, 120)  # Smaller size for 7" display
         layout = QVBoxLayout(widget)
-        layout.setSpacing(15)
-        layout.setContentsMargins(20, 20, 20, 20)
+        layout.setSpacing(5)
+        layout.setContentsMargins(10, 10, 10, 10)
         
         value_label = QLabel()
         value_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        # Decreased from 42 to 36 in the stylesheet, so no need to re-override here
-        value_label.setFont(QFont("Open Sans", 36, QFont.Weight.Bold))
+        value_label.setFont(QFont("Open Sans", 24, QFont.Weight.Bold))  # Decreased from 36
         value_label.setProperty("class", "weather-value")
-        value_label.setMinimumHeight(50)
+        value_label.setMinimumHeight(40)
         
         desc_label = QLabel(f"{label_text}\n{unit}")
         desc_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        desc_label.setFont(QFont("Open Sans", 14))
+        desc_label.setFont(QFont("Open Sans", 12))  # Smaller font
         desc_label.setProperty("class", "weather-label")
         
         layout.addWidget(value_label)
@@ -275,42 +345,39 @@ class WeatherApp(QMainWindow):
         panel = QWidget()
         panel.setObjectName("forecastPanel")
         layout = QVBoxLayout(panel)
-        layout.setSpacing(8)
+        layout.setSpacing(4)  # Reduced spacing
+        layout.setContentsMargins(5, 5, 5, 5)  # Reduced margins
 
         # Day label
         day_label = QLabel()
         day_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        day_label.setFont(QFont("Open Sans", 14, QFont.Weight.Bold))
+        day_label.setFont(QFont("Open Sans", 12, QFont.Weight.Bold))  # Smaller font
         layout.addWidget(day_label)
         
         # Create horizontal container for icon and precipitation
         icon_container = QWidget()
         icon_layout = QHBoxLayout(icon_container)
-        # Remove margins to allow natural centering
         icon_layout.setContentsMargins(0, 0, 0, 0)
-        # Increase spacing between icon and percentage
-        icon_layout.setSpacing(8)
+        icon_layout.setSpacing(4)  # Reduced spacing
         
-        # Add stretching space on the left
         icon_layout.addStretch(1)
         
-        # Weather icon
+        # Weather icon - smaller for 7" screen
         weather_icon = QLabel()
         weather_icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        weather_icon.setFixedSize(64, 64)
+        weather_icon.setFixedSize(48, 48)  # Reduced size
         icon_layout.addWidget(weather_icon)
         
         # Precipitation probability
         precip_label = QLabel()
         precip_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
-        precip_label.setFont(QFont("Open Sans", 11))
+        precip_label.setFont(QFont("Open Sans", 10))  # Smaller font
         precip_label.setStyleSheet("""
             color: #3498db;
-            margin-left: 4px;
+            margin-left: 2px;
         """)
         icon_layout.addWidget(precip_label)
         
-        # Add stretching space on the right
         icon_layout.addStretch(1)
         
         layout.addWidget(icon_container)
@@ -319,13 +386,13 @@ class WeatherApp(QMainWindow):
         weather_desc = QLabel()
         weather_desc.setAlignment(Qt.AlignmentFlag.AlignCenter)
         weather_desc.setWordWrap(True)
-        weather_desc.setFont(QFont("Open Sans", 12))
+        weather_desc.setFont(QFont("Open Sans", 10))  # Smaller font
         layout.addWidget(weather_desc)
         
         # Temperature
         temp_label = QLabel()
         temp_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        temp_label.setFont(QFont("Open Sans", 13))
+        temp_label.setFont(QFont("Open Sans", 11))  # Smaller font
         layout.addWidget(temp_label)
         
         # Store labels as attributes
@@ -368,7 +435,7 @@ class WeatherApp(QMainWindow):
             icon = self.load_weather_icon(weather_code)
             if not icon.isNull():
                 panel.weather_icon.setPixmap(icon.scaled(
-                    64, 64,
+                    48, 48,  # Reduced icon size
                     Qt.AspectRatioMode.KeepAspectRatio,
                     Qt.TransformationMode.SmoothTransformation
                 ))
@@ -378,7 +445,7 @@ class WeatherApp(QMainWindow):
             panel.weather_desc.setText(forecast['weatherDesc'])
             panel.temp_label.setText(f"{forecast['tempHigh']}°↑  {forecast['tempLow']}°↓")
             
-            # Update precipitation probability (minimalist style)
+            # Update precipitation probability
             precip = forecast['precipitationProbability']
             panel.precip_label.setText(f"{precip}%")
             
@@ -439,5 +506,5 @@ class WeatherApp(QMainWindow):
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     window = WeatherApp()
-    window.show()
+    window.showFullScreen()  # Show fullscreen instead of normal window
     sys.exit(app.exec())

@@ -1,4 +1,9 @@
 import sys
+import os
+
+# Force using X11 instead of Wayland before importing PyQt
+os.environ["QT_QPA_PLATFORM"] = "xcb"
+
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, 
     QLineEdit, QPushButton, QLabel, QCompleter, QGridLayout, QHBoxLayout
@@ -8,7 +13,6 @@ from PyQt6.QtGui import QFont, QIcon, QPixmap
 import json
 from api_handler import get_weather_data
 from datetime import datetime
-import os
 import logging
 from pathlib import Path
 
@@ -504,7 +508,26 @@ class WeatherApp(QMainWindow):
         self.result_widget.show()
 
 if __name__ == "__main__":
-    app = QApplication(sys.argv)
-    window = WeatherApp()
-    window.showFullScreen()  # Show fullscreen instead of normal window
-    sys.exit(app.exec())
+    # Handle platform-specific issues
+    try:
+        app = QApplication(sys.argv)
+        window = WeatherApp()
+        window.showFullScreen()
+        sys.exit(app.exec())
+    except Exception as e:
+        print(f"Error starting application: {e}")
+        print("Trying fallback platform configuration...")
+        try:
+            # Try explicit platform setting if environment variable doesn't work
+            app = QApplication([sys.argv[0], "-platform", "xcb"])
+            window = WeatherApp()
+            window.showFullScreen()
+            sys.exit(app.exec())
+        except Exception as e2:
+            print(f"Second attempt failed: {e2}")
+            print("Trying minimal configuration...")
+            # Last resort - try with minimal window settings
+            app = QApplication(sys.argv)
+            window = WeatherApp()
+            window.showNormal()  # Use normal window instead of fullscreen
+            sys.exit(app.exec())
